@@ -15,19 +15,19 @@ bool distroRecursive(int items_num, int boxes_num, int items_max, vector<int>& b
 	for (int i = min(items_num, items_max - box_items[currentBox]); i >= 0; i--)
 	{
 		box_items[currentBox] += i;
-		//  items_num - i        ,   
+		// если items_num - i предметов в следующем за данным ящике получилось распределить, то возвращаем истину
 		if (distroRecursive(items_num - i, boxes_num, items_max, box_items, currentBox + 1))
 			return true;
 		box_items[currentBox] -= i;
 	}
-	return false; //     
+	return false; // предметы по умолчанию не распределены
 }
 
-/*    ,  , ,  
-      */
+/*С помощью булевой функции заполняем, если возможно, вектор, представляющий собой
+множество ящиков с разложенными в них предметами*/
 vector<int> distroItems(int items_num, int boxes_num, int items_max) {
 	vector<int> box_items(boxes_num, 0);
-	//       
+	// при отсутствии способов распределения возвращаем нулевой вектор
 	if (!distroRecursive(items_num, boxes_num, items_max, box_items, 0))
 		return vector<int>();
 	return box_items;
@@ -41,14 +41,14 @@ int main()
 	int items_max = 24;
 	vector<int> box_items = distroItems(items_num, boxes_num, items_max);
 	if (!box_items.empty()) {
-		cout << "   : ";
+		cout << "Предметы распределены по ящикам: ";
 		for (int item : box_items) {
 			cout << item << " ";
 		}
 		cout << endl;
 	}
 	else
-		cout << " " << endl;
+		cout << "Распределение невозможно" << endl;
 
 	return 0;
 }
