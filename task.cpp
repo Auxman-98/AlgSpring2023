@@ -1,81 +1,79 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-void smartReset(double* array, int n) // ввод элементов множества и его проверка на повторяющиеся элементы
-{
-	setlocale(LC_ALL, "Russian");
-	for (int i = 0; i < n; i++) {
-		cout << "Введите " << (i) << " элемент: ";
-		cin >> array[i];
-		bool flag = false; // повторяющихся элементов нет по умолчанию
-		for (int j = 0; j < i; j++) // проверка на повтор
-		{
-			if (array[i] == array[j]){
-				flag = true;
-				break;
-			}
-		}
-		if (flag) // если повтор был
-		{
-			cout << "Такой элемент уже есть в множестве" << endl;
-			i--;
-		}
-	}
-}
+// Реализация алгоритма Бойера-Мура для поиска подстроки
+int boyer_moore_search(string str, string substr) {
+	// Сбор длин строк
+	int str_len = str.length();
+	int substr_len = substr.length();
 
-void subsetWithSum(double* array, int n, double sum) // проверяем наличие подмножества с заданной суммой
-{
-	int ires = -1;
-	int k = powf(2, n); // количество подмножеств
-	for (int i = 0; i < k; i++) // перебор подмножеств
-	{
-		int partial = 0;
-		bool flag = false; // искомое подмножество пусто по умолчанию
-		for (int j = 0; j < n; j++)
-			if (i & (1 << j)){
-				partial += array[j]; // набираем сумму
-				flag = true; // подмножество непустое
-			}
-		if (partial == sum && flag) {
-			ires = i;
-			break; // с искомым подмножеством выходим из перебора
+	// Создание таблицы смещений
+	int bmd_table[256];
+	for (int i = 0; i < 256; ++i)
+		bmd_table[i] = substr_len;
+	for (int i = 0; i < substr_len - 1; ++i)
+		bmd_table[substr[i]] = substr_len - i - 1;
+
+	// Поиск подстрок
+	int i = substr_len - 1, j = substr_len - 1;
+	while (i < str_len) {
+		if (str[i] == substr[j]) {
+			if (j == 0)
+				return i;
+			--i;
+			--j;
+		}
+		else {
+			i += bmd_table[str[i]];
+			j = substr_len - 1;
 		}
 	}
-
-	if (ires == -1)
-		cout << "Подмножество с заданной суммой не существует" << endl;
-	else {
-		cout << "Подмножество с заданной суммой:\n";
-		for (int j = 0; j < n; j++)
-			if (ires & (1 << j))
-				cout << array[j] << " ";
-		cout << endl; // выходим из цикла
-	}
+	return -1;
 }
 
 int main()
 {
 	setlocale(LC_ALL, "Russian");
-	double* a;
-	double s;
-	int n;
-	do {
-		cout << "Введите размер множества: ";
-		cin >> n;
-	} while (n < 1); // проверка на допустимое значение n
+	// Открытие файлов чтения и записи
+	ifstream fin("text-13.txt");
+	ofstream fout("result-13.txt");
 
-	a = new double[n]; // выделяем память
+	// Проверка наличия файлов
+	if (!fin) {
+		cout << "Ошибка: файл text-13.txt не найден\n";
+		return 1;
+	}
+	if (!fout) {
+		cout << "Ошибка: файл result-13.txt не найден\n";
+		return 1;
+	}
 
-	smartReset(a, n);
+	// Считывание исходной строки
+	string text;
+	getline(fin, text);
 
-	cout << "Введите нужную сумму чисел: ";
-	cin >> s;
+	// Вывод строки поиска
+	string pattern;
+	cout << "Введите подстроку для поиска: ";
+	getline(cin, pattern);
 
-	subsetWithSum(a, n, s);
+	// Поиск подстрок
+	int pos = boyer_moore_search(text, pattern);
 
-	delete[] a; // освобождаем память
+	if (pos == -1) {
+		fout << "Подстрока не найдена\n";
+	}
+	else {
+		fout << "Подстрока найдена в позиции " << pos << endl;
+	}
+
+	// Закрытие файлов
+	fin.close();
+	fout.close();
 
 	return 0;
 }
